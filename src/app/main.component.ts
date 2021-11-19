@@ -5,10 +5,9 @@ import { AnimalService } from './animal.service';
 
 @Component({
   selector: 'fe-main',
-  templateUrl: './main.component.html'
+  templateUrl: './main.component.html',
 })
 export class MainComponent implements OnInit {
-
   public animalsByClass: IStringMap<Animal[]> = {};
 
   constructor(private animalService: AnimalService) {}
@@ -18,10 +17,9 @@ export class MainComponent implements OnInit {
   }
 
   public getAnimalsByContinent(): void {
-    this.animalService.getAnimalsByContinent()
-      .subscribe((animals) => {
-        this.animalsByClass = this.getAnimalsByClass(animals);
-      });
+    this.animalService.getAnimalsByContinent().subscribe((animals) => {
+      this.animalsByClass = this.getAnimalsByClass(animals);
+    });
   }
 
   // Transform the "animalsByContinent" object (see mock-animals.ts) so that animals
@@ -35,9 +33,37 @@ export class MainComponent implements OnInit {
   // test file and view the getMockAnimalsByClass() function for an example).
   // These lists should not contain duplicates and should be alphabetized from
   // "A" to "z".
-  public getAnimalsByClass(animals: IStringMap<Animal[]>): IStringMap<Animal[]> {
-    // Add your code here.
-    // Run `ng test` to see if your code passes.
-    return {};
+  public getAnimalsByClass(
+    animals: IStringMap<Animal[]>
+  ): IStringMap<Animal[]> {
+    let sortedAnimals = {};
+    // get the entries of animals based on continent and animal itself
+    for (const [continentName, continentAnimals] of Object.entries(animals)) {
+      // loop through the animals on each continent
+      continentAnimals.forEach((animal, index) => {
+        //if we don't have an array started for this animal class, make sure we've got one
+        if (
+          animal.class in sortedAnimals ||
+          (sortedAnimals[animal.class] = [])
+        ) {
+          // if we don't already have this animal in this array, add it
+          if (
+            !sortedAnimals[animal.class].find((elem) => elem.id === animal.id)
+          ) {
+            // push animals to class and display
+            sortedAnimals[animal.class].push(animal);
+          }
+        }
+        // now that we've reached the last iteration of animals on this continent,
+        // let's go ahead and sort them alphabetically
+        if (index === continentAnimals.length - 1) {
+          sortedAnimals[animal.class].sort((a, b) =>
+            a.name.localeCompare(b.name)
+          );
+        }
+      });
+    }
+    //print out the sorted distinct animals here
+    return sortedAnimals;
   }
 }
